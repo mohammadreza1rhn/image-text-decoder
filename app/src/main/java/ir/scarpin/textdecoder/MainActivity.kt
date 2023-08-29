@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.util.Log
 import android.view.Menu
 
 import android.widget.Button
@@ -101,6 +102,7 @@ class MainActivity : AppCompatActivity(), UploadCallback {
             uploadImage()
         }
 
+
     }
 
     private fun uploadImage() {
@@ -116,7 +118,7 @@ class MainActivity : AppCompatActivity(), UploadCallback {
         val body=UploadRequestBody(file,"image",this)
 
         MyApi().uploadImage(MultipartBody.Part.createFormData(
-            "image",
+            "file",
             file.name,
             body
         ), RequestBody.create(MediaType.parse("multipart/form-data"),"json")
@@ -125,11 +127,15 @@ class MainActivity : AppCompatActivity(), UploadCallback {
                 call: Call<UploadResponse>?,
                 response: Response<UploadResponse>?
             ) {
-                TODO("Not yet implemented")
+                val responseBody = response?.body()
+                Log.e("message", responseBody.toString())
+               response?.body()?.let {
+                   Log.e("message",it.message)
+               }
             }
 
             override fun onFailure(call: Call<UploadResponse>?, t: Throwable?) {
-                TODO("Not yet implemented")
+                Log.e("message",t?.message!!)
             }
 
         })
@@ -289,24 +295,26 @@ class MainActivity : AppCompatActivity(), UploadCallback {
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+    private fun ContentResolver.getFileName(imageUri: Uri): String {
+        var name=""
+        val returnCursor= if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.query(imageUri,null,null,null)
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
+        if(returnCursor!=null){
+            val nameIndex=returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            returnCursor.moveToFirst()
+            name=returnCursor.getString(nameIndex)
+            returnCursor.close()
+        }
+        return name
+    }
+
 
 
 }
 
 
 
-private fun ContentResolver.getFileName(imageUri: Uri): String {
-    var name=""
-    val returnCursor= if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        this.query(imageUri,null,null,null)
-    } else {
-        TODO("VERSION.SDK_INT < O")
-    }
-    if(returnCursor!=null){
-        val nameIndex=returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-        returnCursor.moveToFirst()
-        name=returnCursor.getString(nameIndex)
-        returnCursor.close()
-    }
-    return name
-}
+

@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import okhttp3.MediaType
 import okhttp3.RequestBody
+import okio.Buffer
 import okio.BufferedSink
 import java.io.File
 import java.io.FileInputStream
@@ -24,12 +25,28 @@ class UploadRequestBody(
             inputStream ->
             var read :Int
             val handler= Handler(Looper.getMainLooper())
-            while (inputStream.read(buffer).also {
-                read=it
-                }!=-1)
-                uploaded+=read
-            sink?.write(buffer,0,read)
+
+//            while (inputStream.read(buffer).also {
+//                read=it
+//                }!=-1)
+//                uploaded+=read
+//            sink?.write(buffer,0,read)
+            do {
+                var read :Int=inputStream.read()
+                val handler= Handler(Looper.getMainLooper())
+
+                if (read == -1) {
+                    break
+                }
+
+                uploaded += read.toLong()
+                sink?.write(buffer, 0, read)
+
+            } while (true)
         }
+    }
+    companion object{
+        private const val DEFAULT_BUFFER_SIZE=100000
     }
 }
 
