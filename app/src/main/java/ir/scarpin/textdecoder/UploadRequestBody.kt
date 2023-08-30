@@ -12,7 +12,13 @@ import java.io.FileInputStream
 class UploadRequestBody(
     private val file: File,
     private val contentType: String,
-    private val callback: UploadCallback
+    private val api_token:String,
+    private val repairID:String,
+    private val subject:String,
+    private val title:String,
+    private val message:String,
+
+    private val callback: UploadCallback,
 ):RequestBody() {
     override fun contentType()= MediaType.parse("$contentType/*")
     override fun contentLength()= file.length()

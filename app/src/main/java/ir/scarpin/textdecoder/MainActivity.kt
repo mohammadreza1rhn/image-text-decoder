@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity(), UploadCallback {
         val file= File(cacheDir,contentResolver.getFileName(imageUri!!))
         val outputStream=FileOutputStream(file)
         inputStream.copyTo(outputStream)
-        val body=UploadRequestBody(file,"image",this)
+        val body=UploadRequestBody(file,"image","%23t%24ThVahvT2a8%25acrXFZYduHBeHMzSen%26rb8JZu9%24t1s*5k4Fk","1234567890","test","test","test",this)
 
         MyApi().uploadImage(MultipartBody.Part.createFormData(
             "file",
@@ -123,6 +123,7 @@ class MainActivity : AppCompatActivity(), UploadCallback {
             body
         ), RequestBody.create(MediaType.parse("multipart/form-data"),"json")
         ).enqueue(object :Callback<UploadResponse>{
+
             override fun onResponse(
                 call: Call<UploadResponse>?,
                 response: Response<UploadResponse>?
@@ -135,7 +136,7 @@ class MainActivity : AppCompatActivity(), UploadCallback {
             }
 
             override fun onFailure(call: Call<UploadResponse>?, t: Throwable?) {
-                Log.e("message",t?.message!!)
+                Log.e("message",t.toString())
             }
 
         })
