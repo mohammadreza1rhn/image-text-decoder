@@ -32,7 +32,9 @@ import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import okhttp3.MediaType
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import java.io.File
 import java.io.FileInputStream
@@ -40,14 +42,16 @@ import java.io.FileOutputStream
 import java.lang.Exception
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-class MainActivity : AppCompatActivity(), UploadCallback {
+class MainActivity : AppCompatActivity() {
     private lateinit var inputImageBtn: MaterialButton
     private lateinit var recognizeTextBtn: MaterialButton
     private lateinit var imageIv: ShapeableImageView
     private lateinit var recognizedTextEt: EditText
 
-    private lateinit var uploadBtn:MaterialButton
+    private lateinit var uploadBtn: MaterialButton
 
     private companion object {
         private const val CAMERA_REQUEST_CODE = 100
@@ -71,7 +75,7 @@ class MainActivity : AppCompatActivity(), UploadCallback {
         recognizeTextBtn = findViewById(R.id.recognizeTextBtn)
         imageIv = findViewById(R.id.imageIv)
         recognizedTextEt = findViewById(R.id.recognizedTextEt)
-        uploadBtn=findViewById(R.id.btn_upload)
+        uploadBtn = findViewById(R.id.btn_upload)
 
         cameraPermissions = arrayOf(
             android.Manifest.permission.CAMERA,
@@ -98,49 +102,110 @@ class MainActivity : AppCompatActivity(), UploadCallback {
             }
         }
 
-        uploadBtn.setOnClickListener{
-            uploadImage()
+        uploadBtn.setOnClickListener {
+            uploadImage2()
         }
 
 
     }
 
-    private fun uploadImage() {
-        if(imageUri==null){
-            showToast("img uri is null...")
-            return
-        }
-        val parcelFileDescriptor=contentResolver.openFileDescriptor(imageUri!!,"r",null)?:return
-        val inputStream=FileInputStream(parcelFileDescriptor.fileDescriptor)
-        val file= File(cacheDir,contentResolver.getFileName(imageUri!!))
-        val outputStream=FileOutputStream(file)
+
+    private fun uploadImage2() {
+        val BASE_URL = "https://test.scarpin.ir/api/v1/"
+        val okHttp2Client = OkHttpClient.Builder()
+
+        val logging = HttpLoggingInterceptor()
+        logging.level = HttpLoggingInterceptor.Level.BODY
+        okHttp2Client.addInterceptor(logging)
+        val parcelFileDescriptor =
+            contentResolver.openFileDescriptor(imageUri!!, "r", null) ?: return
+        val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
+        val file = File(cacheDir, contentResolver.getFileName(imageUri!!))
+        val outputStream = FileOutputStream(file)
         inputStream.copyTo(outputStream)
-        val body=UploadRequestBody(file,"image","%23t%24ThVahvT2a8%25acrXFZYduHBeHMzSen%26rb8JZu9%24t1s*5k4Fk","1234567890","test","test","test",this)
 
-        MyApi().uploadImage(MultipartBody.Part.createFormData(
-            "file",
-            file.name,
-            body
-        ), RequestBody.create(MediaType.parse("multipart/form-data"),"json")
-        ).enqueue(object :Callback<UploadResponse>{
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttp2Client.build())
+            .build()
+            .create(ApiCall::class.java)
+        api.uploadImage(
+            SendParams(
+                "2222222222",
+                "pQgFAGM7YWeX\$D79aV26S6WqzXM6CDa%6Zj!@BKv!Mn8W3?Wgr",
+                "kotlin",
+                "kotlin",
+                "message",
+                file
+            )
+        )
+            .enqueue(object : Callback<ApiCallResponse> {
+                override fun onResponse(
+                    call: Call<ApiCallResponse>?,
+                    response: Response<ApiCallResponse>?
+                ) {
+                    Log.e("message", response?.body().toString())
+                }
 
-            override fun onResponse(
-                call: Call<UploadResponse>?,
-                response: Response<UploadResponse>?
-            ) {
-                val responseBody = response?.body()
-                Log.e("message", responseBody.toString())
-               response?.body()?.let {
-                   Log.e("message",it.message)
-               }
-            }
+                override fun onFailure(call: Call<ApiCallResponse>?, t: Throwable?) {
+                    Log.e("message", t?.message.toString())
+                }
 
-            override fun onFailure(call: Call<UploadResponse>?, t: Throwable?) {
-                Log.e("message",t.toString())
-            }
+            })
 
-        })
+
+//        ApiCallService.call().enqueue(object :Callback<ApiCallResponse>{
+//            override fun onResponse(
+//                call: Call<ApiCallResponse>?,
+//                response: Response<ApiCallResponse>?
+//            ) {
+//                Log.e("message",response?.body().toString())
+//            }
+//
+//            override fun onFailure(call: Call<ApiCallResponse>?, t: Throwable?) {
+//                Log.e("message",t?.message.toString())
+//            }
+//
+//        })
     }
+//    private fun uploadImage() {
+//        if(imageUri==null){
+//            showToast("img uri is null...")
+//            return
+//        }
+//        val parcelFileDescriptor=contentResolver.openFileDescriptor(imageUri!!,"r",null)?:return
+//        val inputStream=FileInputStream(parcelFileDescriptor.fileDescriptor)
+//        val file= File(cacheDir,contentResolver.getFileName(imageUri!!))
+//        val outputStream=FileOutputStream(file)
+//        inputStream.copyTo(outputStream)
+//        val body=UploadRequestBody(file,"image","%23t%24ThVahvT2a8%25acrXFZYduHBeHMzSen%26rb8JZu9%24t1s*5k4Fk","1234567890","test","test","test",this)
+//
+//        MyApi().uploadImage(MultipartBody.Part.createFormData(
+//            "file",
+//            file.name,
+//            body
+//        ), RequestBody.create(MediaType.parse("multipart/form-data"),"json")
+//        ).enqueue(object :Callback<UploadResponse>{
+//
+//            override fun onResponse(
+//                call: Call<UploadResponse>?,
+//                response: Response<UploadResponse>?
+//            ) {
+//                val responseBody = response?.body()
+//                Log.e("message", responseBody.toString())
+//               response?.body()?.let {
+//                   Log.e("message",it.message)
+//               }
+//            }
+//
+//            override fun onFailure(call: Call<UploadResponse>?, t: Throwable?) {
+//                Log.e("message",t.toString())
+//            }
+//
+//        })
+//    }
+
 
     private fun recognizeTextFromImage() {
         progressDialog.setMessage("preapring image ...")
@@ -296,22 +361,22 @@ class MainActivity : AppCompatActivity(), UploadCallback {
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+
     private fun ContentResolver.getFileName(imageUri: Uri): String {
-        var name=""
-        val returnCursor= if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            this.query(imageUri,null,null,null)
+        var name = ""
+        val returnCursor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.query(imageUri, null, null, null)
         } else {
             TODO("VERSION.SDK_INT < O")
         }
-        if(returnCursor!=null){
-            val nameIndex=returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (returnCursor != null) {
+            val nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             returnCursor.moveToFirst()
-            name=returnCursor.getString(nameIndex)
+            name = returnCursor.getString(nameIndex)
             returnCursor.close()
         }
         return name
     }
-
 
 
 }
