@@ -1,6 +1,6 @@
 package ir.scarpin.textdecoder
 
-import android.annotation.SuppressLint
+import android.R.attr.name
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ContentResolver
@@ -9,19 +9,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.Menu
-
-import android.widget.Button
 import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
@@ -31,19 +28,22 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.lang.Exception
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var inputImageBtn: MaterialButton
@@ -124,6 +124,37 @@ class MainActivity : AppCompatActivity() {
         val outputStream = FileOutputStream(file)
         inputStream.copyTo(outputStream)
 
+
+        val requestFile:RequestBody= file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+       val body:MultipartBody.Part= MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+        val repairID:RequestBody=
+            "2222222222".toRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val api_token:RequestBody=
+            "CC#a@@BeEEp%TytsQ?k2RCY\$rJUyqHNe5z?#ey8NqxCd5aF?29".toRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val subject:RequestBody= "kotlin".toRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val title:RequestBody= "kotlin".toRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val message:RequestBody= "kotlin".toRequestBody("multipart/form-data".toMediaTypeOrNull())
+
+
+
+        fun createPartFromString(descriptionString:String):RequestBody{
+            return descriptionString.toRequestBody(MultipartBody.FORM)
+        }
+        fun prepareFilePart(partName:String,fileUri:Uri):MultipartBody.Part{
+
+
+            val requestFile:RequestBody= file.asRequestBody(
+                (contentResolver.getType(fileUri)!!
+                    .toMediaTypeOrNull())
+            )
+
+            return MultipartBody.Part.createFormData(partName,file.name)
+        }
+
+
+
+
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -131,14 +162,7 @@ class MainActivity : AppCompatActivity() {
             .build()
             .create(ApiCall::class.java)
         api.uploadImage(
-            SendParams(
-                "2222222222",
-                "pQgFAGM7YWeX\$D79aV26S6WqzXM6CDa%6Zj!@BKv!Mn8W3?Wgr",
-                "kotlin",
-                "kotlin",
-                "message",
-                file
-            )
+          repairID,api_token,subject,title,message,body
         )
             .enqueue(object : Callback<ApiCallResponse> {
                 override fun onResponse(
@@ -377,6 +401,7 @@ class MainActivity : AppCompatActivity() {
         }
         return name
     }
+
 
 
 }

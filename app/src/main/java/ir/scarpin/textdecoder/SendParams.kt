@@ -8,5 +8,4 @@ data class SendParams(
     val subject:String,
     val title:String,
     val message:String,
-    val file:File
 )
