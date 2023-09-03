@@ -15,9 +15,10 @@ interface ApiCall {
 
     //    @FormUrlEncoded
     @Multipart
-    @Headers("Content-Type: application/json")
+//    @Headers("Content-Type: application/json")
     @POST("ticket/repair/register")
     fun uploadImage(
+//        @Part ("desc") desc:RequestBody,
         @Part("repairID") repairID: RequestBody,
         @Part("api_token") api_token: RequestBody,
         @Part("subject") subject: RequestBody,

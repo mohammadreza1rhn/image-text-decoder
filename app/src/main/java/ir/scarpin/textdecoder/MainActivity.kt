@@ -135,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         val subject:RequestBody= "kotlin".toRequestBody("multipart/form-data".toMediaTypeOrNull())
         val title:RequestBody= "kotlin".toRequestBody("multipart/form-data".toMediaTypeOrNull())
         val message:RequestBody= "kotlin".toRequestBody("multipart/form-data".toMediaTypeOrNull())
+        val desc:RequestBody= "desc".toRequestBody("multipart/form-data".toMediaTypeOrNull())
 
 
 
@@ -169,7 +170,7 @@ class MainActivity : AppCompatActivity() {
                     call: Call<ApiCallResponse>?,
                     response: Response<ApiCallResponse>?
                 ) {
-                    Log.e("message", response?.body().toString())
+                    Log.e("message", response?.body()?.Message.toString())
                 }
 
                 override fun onFailure(call: Call<ApiCallResponse>?, t: Throwable?) {
